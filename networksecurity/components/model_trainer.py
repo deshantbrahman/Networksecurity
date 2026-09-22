@@ -41,22 +41,22 @@ class ModelTrainer:
     def track_mlflow(self, best_model, classificationmetric):
 
     # Initialize DagsHub only during training
-    dagshub.init(
-        repo_owner="deshantbrahman",
-        repo_name="Networksecurity",
-        mlflow=True
-    )
-
-    # Read credentials from environment variables
-    os.environ["MLFLOW_TRACKING_URI"] = "https://dagshub.com/deshantbrahman/Networksecurity.mlflow"
-    os.environ["MLFLOW_TRACKING_USERNAME"] = os.getenv("MLFLOW_TRACKING_USERNAME")
-    os.environ["MLFLOW_TRACKING_PASSWORD"] = os.getenv("MLFLOW_TRACKING_PASSWORD")
-
-    mlflow.set_tracking_uri(os.environ["MLFLOW_TRACKING_URI"])
-
-    tracking_url_type_store = urlparse(
-        mlflow.get_tracking_uri()
-    ).scheme
+        dagshub.init(
+            repo_owner="deshantbrahman",
+            repo_name="Networksecurity",
+            mlflow=True
+        )
+    
+        # Read credentials from environment variables
+        os.environ["MLFLOW_TRACKING_URI"] = "https://dagshub.com/deshantbrahman/Networksecurity.mlflow"
+        os.environ["MLFLOW_TRACKING_USERNAME"] = os.getenv("MLFLOW_TRACKING_USERNAME")
+        os.environ["MLFLOW_TRACKING_PASSWORD"] = os.getenv("MLFLOW_TRACKING_PASSWORD")
+    
+        mlflow.set_tracking_uri(os.environ["MLFLOW_TRACKING_URI"])
+    
+        tracking_url_type_store = urlparse(
+            mlflow.get_tracking_uri()
+        ).scheme
 
     with mlflow.start_run():
 
