@@ -24,15 +24,9 @@ from sklearn.ensemble import (
     RandomForestClassifier,
 )
 import mlflow
-from urllib.parse import urlparse
-
 import dagshub
-dagshub.init(repo_owner='deshantbrahman', repo_name='Networksecurity', mlflow=True)
-os.environ["MLFLOW_TRACKING_URI"]="https://dagshub.com/deshantbrahman/Networksecurity.mlflow"
-os.environ["MLFLOW_TRACKING_USERNAME"]="deshantbrahman"
-os.environ["MLFLOW_TRACKING_PASSWORD"]="c2dffc5823403beaa354468a626378e2afec48fd"
-
-
+from urllib.parse import urlparse
+import os
 
 
 
@@ -46,36 +40,43 @@ class ModelTrainer:
         
     def track_mlflow(self, best_model, classificationmetric):
 
-        mlflow.set_tracking_uri("https://dagshub.com/deshantbrahman/Networksecurity.mlflow")
-    
-        tracking_url_type_store = urlparse(mlflow.get_tracking_uri()).scheme
-    
-        # First create the variables
-        f1_score = classificationmetric.f1_score
-        precision_score = classificationmetric.precision_score
-        recall_score = classificationmetric.recall_score
-    
-        # Then use them
-        with mlflow.start_run():
-    
-            mlflow.log_metric("f1_score", f1_score)
-            mlflow.log_metric("precision", precision_score)
-            mlflow.log_metric("recall_score", recall_score)
-                
-            if tracking_url_type_store != "file":
-                mlflow.sklearn.log_model(
-                    sk_model=best_model,
-                    artifact_path="model",
-                    registered_model_name="NetworkSecurityModel",
-                    skops_trusted_types=["sklearn.tree._tree.Tree"]
-                )
-            else:
-                mlflow.sklearn.log_model(
-                    sk_model=best_model,
-                    artifact_path="model",
-                    skops_trusted_types=["sklearn.tree._tree.Tree"]
-                )
+    # Initialize DagsHub only during training
+    dagshub.init(
+        repo_owner="deshantbrahman",
+        repo_name="Networksecurity",
+        mlflow=True
+    )
 
+    # Read credentials from environment variables
+    os.environ["MLFLOW_TRACKING_URI"] = "https://dagshub.com/deshantbrahman/Networksecurity.mlflow"
+    os.environ["MLFLOW_TRACKING_USERNAME"] = os.getenv("MLFLOW_TRACKING_USERNAME")
+    os.environ["MLFLOW_TRACKING_PASSWORD"] = os.getenv("MLFLOW_TRACKING_PASSWORD")
+
+    mlflow.set_tracking_uri(os.environ["MLFLOW_TRACKING_URI"])
+
+    tracking_url_type_store = urlparse(
+        mlflow.get_tracking_uri()
+    ).scheme
+
+    with mlflow.start_run():
+
+        mlflow.log_metric("f1_score", classificationmetric.f1_score)
+        mlflow.log_metric("precision_score", classificationmetric.precision_score)
+        mlflow.log_metric("recall_score", classificationmetric.recall_score)
+
+        if tracking_url_type_store != "file":
+            mlflow.sklearn.log_model(
+                sk_model=best_model,
+                artifact_path="model",
+                registered_model_name="NetworkSecurityModel",
+                skops_trusted_types=["sklearn.tree._tree.Tree"]
+            )
+        else:
+            mlflow.sklearn.log_model(
+                sk_model=best_model,
+                artifact_path="model",
+                skops_trusted_types=["sklearn.tree._tree.Tree"]
+            )
 
         
     def train_model(self,X_train,y_train,x_test,y_test):
